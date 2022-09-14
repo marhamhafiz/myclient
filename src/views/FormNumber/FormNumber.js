@@ -19,6 +19,16 @@ const FormNumber = (props) => {
 
     const navigate = useNavigate();
 
+    const handleSubmitAddNumber = async () => {
+        axios.post(`http://localhost:4000/addnumber`, {
+            "phone_number": phone,
+            "id" : props.id
+        })
+        .then(() => {
+            navigate('/');
+        });
+    }
+
     const handleSubmitEditNumber = async () => {
         axios.post(`http://localhost:4000/editnumber`, {
             "old_number": props.old_number,
@@ -44,7 +54,7 @@ const FormNumber = (props) => {
                 />
             </CForm>
             <div className="d-grid mt-2 mb-2 d-md-flex justify-content-md-end">
-                <CButton  color="primary" onClick={handleSubmitEditNumber} >Save changes</CButton>
+                <CButton  color="primary" onClick={props.isEdit ? handleSubmitEditNumber : handleSubmitAddNumber} >Save changes</CButton>
             </div>
         </>
     )

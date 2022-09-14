@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import  { useNavigate } from 'react-router-dom'
-import FormContact from '../FormContact/FormContact'
-import FormNumber from '../FormNumber/FormNumber'
-
 import axios from 'axios'
-
 import CIcon from '@coreui/icons-react'
 
 import {
@@ -26,9 +22,13 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CTooltip,
 } from '@coreui/react'
 
-import { cilPencil } from '@coreui/icons';
+import { cilPencil, cilPlus } from '@coreui/icons';
+
+const FormContact = React.lazy(() => import('../FormContact/FormContact'));
+const FormNumber = React.lazy(() => import('../FormNumber/FormNumber'));
 
 const Contact = () => {
   const [contactList, setContactList] = useState([])
@@ -100,6 +100,13 @@ const Contact = () => {
     setModalVisible(!modalVisible)
   }
 
+  const onAddNumber = async (id,number) => {
+    setNumberModalVisible(!modalVisible)
+    setContactId(id)
+    seteditForm(false)
+    setNumberContact(number)
+  }
+
   const onEditNumber = async (id,number) => {
     setNumberModalVisible(!modalVisible)
     setContactId(id)
@@ -134,6 +141,13 @@ const Contact = () => {
     }))
   }
 
+  const onCloseNumberModal = () => {
+    setNumberModalVisible(false)
+    setContactId(0)
+    seteditForm(false)
+    setNumberContact('')
+  }
+
   const onCloseDeleteModal = () => {
     setDeleteModalVisible(false)
   }
@@ -153,6 +167,7 @@ const Contact = () => {
                     <CTableHeaderCell>First Name</CTableHeaderCell>
                     <CTableHeaderCell>Last Name</CTableHeaderCell>
                     <CTableHeaderCell >Phones</CTableHeaderCell>
+                    <CTableHeaderCell className="text-center">/</CTableHeaderCell>
                     <CTableHeaderCell className="text-center">Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -165,19 +180,46 @@ const Contact = () => {
                       <CTableDataCell>
                         {contact.phones.map((phone) => {
                           return (
-                            <div key={phone.number}>{phone.number}<CButton
-                            className="ms-1 me-1 mb-1" 
-                            color="success"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onEditNumber(contact.id,phone.number)}
-                        >
-                            <CIcon icon={cilPencil} size="sm"/>
-                        </CButton></div>
+                          <div key={phone.number}>{phone.number}
+                            <CTooltip
+                              content="Edit Number"
+                              placement="top"
+                            >
+                              <CButton
+                                className="ms-1 me-1 mb-1" 
+                                color="warning"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onEditNumber(contact.id,phone.number)}
+                              >
+                                <CIcon icon={cilPencil} size="sm"/>
+                              </CButton>
+                            </CTooltip>
+                          </div>
                           )
                         })}
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
+                        <CTooltip
+                          content="Add Phone Number"
+                          placement="top"
+                        >
+                          <CButton
+                            className="ms-1 me-1 mb-1" 
+                            color="success"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAddNumber(contact.id,'')}
+                          >
+                            <CIcon icon={cilPlus} size="sm"/>
+                          </CButton>
+                        </CTooltip>
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        <CTooltip
+                          content="Edit Contact"
+                          placement="top"
+                        >
                           <CButton
                               className="me-1 mb-1" 
                               color="success"
@@ -187,15 +229,21 @@ const Contact = () => {
                           >
                               Edit
                           </CButton>
+                        </CTooltip>
+                        <CTooltip
+                          content="Delete Contact"
+                          placement="top"
+                        >
                           <CButton 
-                              className="me-1 mb-1"
-                              color="danger"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openDeleteModal(contact.id)}
+                            className="me-1 mb-1"
+                            color="danger"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openDeleteModal(contact.id)}
                           >
-                              Delete
+                            Delete
                           </CButton>
+                        </CTooltip>
                       </CTableDataCell>
                     </CTableRow>
                   )
@@ -231,8 +279,8 @@ const Contact = () => {
       </>
 
       <>
-        <CModal visible={numberModallVisible} onClose={() => onCloseModal()}>
-        <CModalHeader onClose={() => onCloseModal()}>
+        <CModal visible={numberModallVisible} onClose={() => onCloseNumberModal()}>
+        <CModalHeader onClose={() => onCloseNumberModal()}>
             {
               editForm ? <CModalTitle>Edit Number</CModalTitle> : <CModalTitle>Add New Number</CModalTitle>
             }
