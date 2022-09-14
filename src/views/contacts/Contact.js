@@ -186,6 +186,7 @@ const Contact = () => {
                               placement="top"
                             >
                               <CButton
+                                aria-label="edit number"
                                 className="ms-1 me-1 mb-1" 
                                 color="warning"
                                 variant="outline"
@@ -205,6 +206,7 @@ const Contact = () => {
                           placement="top"
                         >
                           <CButton
+                            aria-label="add new number"
                             className="ms-1 me-1 mb-1" 
                             color="success"
                             variant="outline"
@@ -221,11 +223,12 @@ const Contact = () => {
                           placement="top"
                         >
                           <CButton
-                              className="me-1 mb-1" 
-                              color="success"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onEditContact(contact.id)}
+                            aria-label="edit contact"
+                            className="me-1 mb-1" 
+                            color="success"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onEditContact(contact.id)}
                           >
                               Edit
                           </CButton>
@@ -234,7 +237,8 @@ const Contact = () => {
                           content="Delete Contact"
                           placement="top"
                         >
-                          <CButton 
+                          <CButton
+                            aria-label="delete contact"
                             className="me-1 mb-1"
                             color="danger"
                             variant="outline"
