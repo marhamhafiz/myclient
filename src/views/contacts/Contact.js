@@ -1,4 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import  { useNavigate } from 'react-router-dom'
+import FormContact from '../FormContact/FormContact'
+import FormNumber from '../FormNumber/FormNumber'
+
+import axios from 'axios'
+
+import CIcon from '@coreui/icons-react'
 
 import {
   CButton,
@@ -6,13 +13,10 @@ import {
   CCardBody,
   CCardHeader,
   CCol,
-  CForm,
-  CFormInput,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
-  CModalFooter,
   CPagination,
   CPaginationItem,
   CRow,
@@ -24,63 +28,114 @@ import {
   CTableRow,
 } from '@coreui/react'
 
+import { cilPencil } from '@coreui/icons';
+
 const Contact = () => {
-  const [modalVisible, setModalVisible] = useState(false)
+  const [contactList, setContactList] = useState([])
+  const [editForm, seteditForm] = useState(false)
+  const [contactId, setContactId] = useState(0)
   const [contactForm, setContactForm] = useState({
     first_name : '',
     last_name : '',
-    phones : []
+    phones : [{ number : '' }]
   })
 
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
+  const [numberContact, setNumberContact] = useState('')
 
-  const handleChangeName = (e) => {
-    setName(e.target.value)
-    setPhoneName()
+  const [modalVisible, setModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [numberModallVisible, setNumberModalVisible] = useState(false)
+
+  const [pageNumber, setPageNumber] = useState(1)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [pageOffset, setPageOffset] = useState(0)
+
+  const getListContact = async (limit,offset) => {
+    await axios.get(`http://localhost:4000/getcontact`, 
+    {
+      params: {
+        "limit": limit,
+        "offset" : offset
+      }
+    })
+    .then((response) => {
+      setContactList(response.data.data.contact)
+    })
+  }
+   
+  useEffect(() => {  
+    getListContact(pageLimit,pageOffset);// eslint-disable-next-line 
+  },[])
+
+  const nextPage = () => {
+    setPageNumber(pageNumber+1)
+    setPageLimit(pageLimit)
+    setPageOffset(pageOffset+10)
+    getListContact(pageLimit,pageOffset+10)
   }
 
-  const setPhoneName = () => {
+  const prevPage = () => {
+    setPageNumber(pageNumber-1)
+    setPageLimit(pageLimit)
+    setPageOffset(pageOffset-10)
+    getListContact(pageLimit,pageOffset-10);
+  }
+
+  const onAddContact = async () => {
+    seteditForm(false)
+    setModalVisible(!modalVisible)
+  }
+
+  const onEditContact = async (id) => {
+    seteditForm(true)
+    setContactId(id)
+    let contacts = await contactList.find( i => i.id === id)
     setContactForm((contactForm) => (
         { 
             ...contactForm, 
-            first_name: name.split(' ').length === 1 ? name.split(' ').slice(-1).join(' ') : name.split(' ').slice(0, -1).join(' '),
-            last_name: name.split(' ').length === 1 ? '' : name.split(' ').slice(-1).join(' '),
+            first_name: contacts.first_name,
+            last_name: contacts.last_name,
+            phones: contacts.phones,
     }))
+    setModalVisible(!modalVisible)
   }
 
-  const handleChangePhone = (e) => {
-    setPhone(e.target.value)
-    setPhoneNumber()
+  const onEditNumber = async (id,number) => {
+    setNumberModalVisible(!modalVisible)
+    setContactId(id)
+    seteditForm(true)
+    setNumberContact(number)
   }
 
-  const setPhoneNumber = () => {
-    setContactForm((contactForm) => (
-        { 
-            ...contactForm, 
-            phones: [
-                {
-                    "number": phone
-                }
-            ]
-    }))
+  const navigate = useNavigate();
+
+  const openDeleteModal = (id) => {
+    setDeleteModalVisible(true)
+    setContactId(id)
+  }
+
+  const sumbmitDeleteContact = () => {
+    axios.post(`http://localhost:4000/deletecontact`, {
+        "id" : contactId
+    })
+    .then(() => {
+        navigate('/');
+    });
   }
 
   const onCloseModal = () => {
     setModalVisible(false)
-    setName('')
-    setPhone('') 
     setContactForm((contactForm) => (
         { 
             ...contactForm, 
             first_name: '',
             last_name: '',
-            phones: [],
+            phones: [{ number : '' }],
     }))
   }
 
-  const handleSubmitContact = () => {
-    console.log(contactForm)
+  const onCloseDeleteModal = () => {
+    setDeleteModalVisible(false)
   }
   return (
     <>
@@ -90,7 +145,7 @@ const Contact = () => {
             <CCardHeader>Contacts List {' & '} Manage</CCardHeader>
             <CCardBody>
               <div className="d-grid mb-2 d-md-flex justify-content-md-end">
-                <CButton color="primary" onClick={() => setModalVisible(!modalVisible)}>Add Contacts</CButton>
+                <CButton color="primary" onClick={() => onAddContact()}>Add Contacts</CButton>
               </div>
               <CTable align="middle" className="mb-0 border" hover responsive>
                 <CTableHead color="light">
@@ -102,30 +157,58 @@ const Contact = () => {
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                <CTableRow>
-                  <CTableHeaderCell scope="row">Mark</CTableHeaderCell>
-                    <CTableDataCell>Otto</CTableDataCell>
-                    <CTableDataCell>0812398129038<br/>0812398129038<br/>0812398129038</CTableDataCell>
-                    <CTableDataCell className="text-center">
-                        <CButton 
+                {contactList.map((contact) => {
+                  return (
+                    <CTableRow key={contact.id}>
+                      <CTableHeaderCell scope="row">{contact.first_name}</CTableHeaderCell>
+                      <CTableDataCell>{contact.last_name}</CTableDataCell>
+                      <CTableDataCell>
+                        {contact.phones.map((phone) => {
+                          return (
+                            <div key={phone.number}>{phone.number}<CButton
+                            className="ms-1 me-1 mb-1" 
                             color="success"
-                            onClick={() => setModalVisible(!modalVisible)}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onEditNumber(contact.id,phone.number)}
                         >
-                            Edit
-                        </CButton>
-                    </CTableDataCell>
-                  </CTableRow>
+                            <CIcon icon={cilPencil} size="sm"/>
+                        </CButton></div>
+                          )
+                        })}
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                          <CButton
+                              className="me-1 mb-1" 
+                              color="success"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onEditContact(contact.id)}
+                          >
+                              Edit
+                          </CButton>
+                          <CButton 
+                              className="me-1 mb-1"
+                              color="danger"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDeleteModal(contact.id)}
+                          >
+                              Delete
+                          </CButton>
+                      </CTableDataCell>
+                    </CTableRow>
+                  )
+                })}
                 </CTableBody>
               </CTable>
               <div className="d-grid mt-2 d-md-flex justify-content-center">
                 <CPagination aria-label="contact list pagination">
-                    <CPaginationItem aria-label="Previous" disabled>
+                    <CPaginationItem aria-label="previous page" onClick={() => prevPage()} disabled={pageNumber === 1}>
                         <span aria-hidden="true">&laquo;</span>
                     </CPaginationItem>
-                    <CPaginationItem active>1</CPaginationItem>
-                    <CPaginationItem>2</CPaginationItem>
-                    <CPaginationItem>3</CPaginationItem>
-                    <CPaginationItem aria-label="Next">
+                    <CPaginationItem active>{pageNumber}</CPaginationItem>
+                    <CPaginationItem aria-label="next page" onClick={() => nextPage()} disabled={contactList.length < 10}> 
                         <span aria-hidden="true">&raquo;</span>
                     </CPaginationItem>
                 </CPagination>
@@ -137,38 +220,42 @@ const Contact = () => {
       <>
         <CModal visible={modalVisible} onClose={() => onCloseModal()}>
         <CModalHeader onClose={() => onCloseModal()}>
-            <CModalTitle>Add New Phone</CModalTitle>
+            {
+              editForm ? <CModalTitle>Edit Contact</CModalTitle> : <CModalTitle>Add New Contact</CModalTitle>
+            }
         </CModalHeader>
         <CModalBody>
-            <CForm autoComplete='off'>
-                <CFormInput
-                    type="text"
-                    id="contactName"
-                    label="Name"
-                    placeholder="Your Name"
-                    text="Must be unique and does not have special character"
-                    aria-describedby="contact-name"
-                    value={name}
-                    onChange={handleChangeName}
-                />
-                <CFormInput
-                    type="text"
-                    id="contactPhone"
-                    label="Phone Number"
-                    placeholder="Your Phone Number"
-                    text="Must be greater than 8 characters long."
-                    aria-describedby="contact-number"
-                    value={phone}
-                    onChange={handleChangePhone}
-                />
-            </CForm>
+          <FormContact data={contactForm} isEdit={editForm} editId={contactId}/>
         </CModalBody>
-        <CModalFooter>
-            <CButton color="secondary" onClick={() => onCloseModal()}>
-            Close
-            </CButton>
-            <CButton color="primary" onClick={handleSubmitContact} >Save changes</CButton>
-        </CModalFooter>
+        </CModal>
+      </>
+
+      <>
+        <CModal visible={numberModallVisible} onClose={() => onCloseModal()}>
+        <CModalHeader onClose={() => onCloseModal()}>
+            {
+              editForm ? <CModalTitle>Edit Number</CModalTitle> : <CModalTitle>Add New Number</CModalTitle>
+            }
+        </CModalHeader>
+        <CModalBody>
+          <FormNumber old_number={numberContact} isEdit={editForm} id={contactId}/>
+        </CModalBody>
+        </CModal>
+      </>
+
+      <>
+        <CModal visible={deleteModalVisible} onClose={() => onCloseDeleteModal()}>
+        <CModalHeader onClose={() => onCloseDeleteModal()}>
+            <CModalTitle>Delete Contact</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <div className="d-grid mt-2 d-md-flex justify-content-start">
+            Are you sure to delete this contact?
+          </div>
+          <div className="d-grid mt-4 mb-2 d-md-flex justify-content-md-end">
+            <CButton  color="danger" onClick={sumbmitDeleteContact}>Yes, Delete</CButton>
+          </div>
+        </CModalBody>
         </CModal>
       </>
     </>
