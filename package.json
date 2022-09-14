@@ -1,7 +1,7 @@
 {
-  "name": "@coreui/coreui-free-react-admin-template",
+  "name": "myserver",
   "version": "4.4.0",
-  "description": "CoreUI Free React Admin Template",
+  "description": "Graphql Client with React using coreui template",
   "homepage": ".",
   "bugs": {
     "url": "https://github.com/coreui/coreui-free-react-admin-template/issues"

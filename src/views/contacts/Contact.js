@@ -27,8 +27,8 @@ import {
 
 import { cilPencil, cilPlus } from '@coreui/icons';
 
-const FormContact = React.lazy(() => import('../FormContact/FormContact'));
-const FormNumber = React.lazy(() => import('../FormNumber/FormNumber'));
+const FormContact = React.lazy(() => import('../formcontact/FormContact'));
+const FormNumber = React.lazy(() => import('../formnumber/FormNumber'));
 
 const Contact = () => {
   const [contactList, setContactList] = useState([])
@@ -256,11 +256,11 @@ const Contact = () => {
               </CTable>
               <div className="d-grid mt-2 d-md-flex justify-content-center">
                 <CPagination aria-label="contact list pagination">
-                    <CPaginationItem aria-label="previous page" onClick={() => prevPage()} disabled={pageNumber === 1}>
+                    <CPaginationItem style={{cursor: "pointer"}} aria-label="previous page" onClick={() => prevPage()} disabled={pageNumber === 1}>
                         <span aria-hidden="true">&laquo;</span>
                     </CPaginationItem>
                     <CPaginationItem active>{pageNumber}</CPaginationItem>
-                    <CPaginationItem aria-label="next page" onClick={() => nextPage()} disabled={contactList.length < 10}> 
+                    <CPaginationItem style={{cursor: "pointer"}} aria-label="next page" onClick={() => nextPage()} disabled={contactList.length < 10}> 
                         <span aria-hidden="true">&raquo;</span>
                     </CPaginationItem>
                 </CPagination>
